@@ -1,0 +1,13 @@
+{
+  "name": "bruno-api-docs",
+  "description": "Bru-lang reference skill + hooks that keep a Bruno API collection in sync with API route changes across any language/framework (FastAPI, Flask, Django, Express, NestJS, Spring, Go, Rails, Laravel, Rust, ...).",
+  "version": "1.0.0",
+  "author": {
+    "name": "prasadbhosale80",
+    "url": "https://github.com/prasadbhosale80"
+  },
+  "homepage": "https://github.com/prasadbhosale80/bruno-skill",
+  "repository": "https://github.com/prasadbhosale80/bruno-skill",
+  "license": "MIT",
+  "keywords": ["bruno", "api", "testing", "documentation", "bru", "openapi"]
+}

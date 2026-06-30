@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/detect-endpoint-change.sh",
+            "timeout": 15,
+            "statusMessage": "Checking for API route changes to sync into Bruno..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/verify-bruno-sync.sh",
+            "timeout": 30,
+            "statusMessage": "Verifying the Bruno collection is in sync with API routes..."
+          }
+        ]
+      }
+    ]
+  }
+}

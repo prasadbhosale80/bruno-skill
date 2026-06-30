@@ -1,0 +1,19 @@
+{
+  "name": "bruno-skill",
+  "description": "Bruno API documentation tooling for Claude Code: a bru-lang skill plus hooks that keep your Bruno collection in sync with API route changes in any language or framework.",
+  "owner": {
+    "name": "prasadbhosale80",
+    "url": "https://github.com/prasadbhosale80/bruno-skill"
+  },
+  "plugins": [
+    {
+      "name": "bruno-api-docs",
+      "source": "./plugins/bruno-api-docs",
+      "description": "Teaches the agent bru-lang and keeps a Bruno API collection in sync with your routes — any language or framework. Bundles the bruno-api-docs-skill plus sync hooks.",
+      "version": "1.0.0",
+      "author": {
+        "name": "prasadbhosale80"
+      }
+    }
+  ]
+}

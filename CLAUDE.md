@@ -2,9 +2,11 @@
 
 ## Bruno Collection Sync (MANDATORY)
 
-This repo ships a Bruno API collection in `bruno-collection/`. It is the source of truth for API testing and must never drift from the actual API. **Whenever you create, modify, or remove an API endpoint (route handler, controller, OpenAPI spec, GraphQL resolver), update the Bruno collection in the same change — not as a follow-up.** A PR that touches endpoints but not the collection is incomplete.
+This repo ships a Bruno API collection (the folder containing `bruno.json` / `collection.bru` — auto-detected; default `bruno-collection/` if you haven't created one yet). It is the source of truth for API testing and must never drift from the actual API. **Whenever you create, modify, or remove an API endpoint — in any language or framework (FastAPI/Flask/Django, Express/NestJS, Spring, Go, Rails, Laravel, Rust, an OpenAPI spec, a GraphQL resolver, …) — update the Bruno collection in the same change, not as a follow-up.** A PR that touches endpoints but not the collection is incomplete.
 
-Follow the `bruno` skill for `.bru` syntax. The rules below define *when* and *what* to sync.
+If no collection exists yet, **ask the user** whether to create it as `bruno-collection/` or under a different folder name before scaffolding it (with a `bruno.json` manifest).
+
+Follow the `bruno-api-docs-skill` skill for `.bru` syntax. The rules below define *when* and *what* to sync.
 
 ### Trigger → Action
 

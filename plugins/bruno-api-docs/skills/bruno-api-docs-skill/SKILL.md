@@ -1,5 +1,5 @@
 ---
-name: bruno
+name: bruno-api-docs-skill
 description: "Use this skill whenever working with Bruno API testing collections — creating, editing, or generating .bru files; writing pre-request or post-response scripts; adding tests and assertions; organizing collections and environments; running collections via CLI; writing GraphQL requests; or generating documentation. Triggers: any mention of Bruno, .bru files, bruno.json, bru lang, Bruno CLI, Bruno collections, or tasks like 'create API tests', 'write Bruno scripts', 'add Bruno assertions'. Also use when asked to scaffold a new API collection from source code, add CI/CD pipeline for Bruno tests, or convert Postman/Insomnia collections to Bruno."
 license: Reference documentation compiled from https://docs.usebruno.com (MIT-licensed open source project)
 ---
@@ -11,6 +11,7 @@ license: Reference documentation compiled from https://docs.usebruno.com (MIT-li
 Bruno is a local-first, open-source API client. Collections are plain `.bru` text files on disk — version-controllable, diff-friendly, Git-native. No cloud sync, no proprietary formats.
 
 **Mental model:**
+
 - **Collection** = a folder with a `bruno.json` manifest
 - **Request** = one `.bru` file
 - **Environments** = `.bru` files inside `environments/`
@@ -86,6 +87,7 @@ docs {
 ```bru
 get | post | put | patch | delete | head | options { url: ... }
 ```
+
 Custom methods (`LIST`, `SEARCH`) supported via UI.
 
 ---
@@ -156,6 +158,7 @@ my-api-collection/
 ```
 
 **`bruno.json`:**
+
 ```json
 {
   "version": "1",
@@ -166,6 +169,7 @@ my-api-collection/
 ```
 
 **`environments/local.bru`:**
+
 ```bru
 vars {
   baseUrl: http://localhost:3000
@@ -183,17 +187,18 @@ vars:secret {
 
 Precedence (highest → lowest):
 
-| Type | Scope | Storage | Script Access |
-|------|-------|---------|---------------|
-| Runtime | Current run | Memory | `bru.setVar()` / `bru.getVar()` |
-| Request | Single request | `.bru` | `bru.getRequestVar()` |
-| Folder | Folder + children | folder `.bru` | `bru.getFolderVar()` |
-| Environment | Active env | env `.bru` | `bru.getEnvVar()` |
-| Collection | Whole collection | `bruno.json` | `bru.getCollectionVar()` |
-| Global | All collections | App storage | `bru.getGlobalEnvVar()` |
-| Process Env | OS env | `.env` | `bru.getProcessEnv()` |
+| Type        | Scope             | Storage       | Script Access                   |
+| ----------- | ----------------- | ------------- | ------------------------------- |
+| Runtime     | Current run       | Memory        | `bru.setVar()` / `bru.getVar()` |
+| Request     | Single request    | `.bru`        | `bru.getRequestVar()`           |
+| Folder      | Folder + children | folder `.bru` | `bru.getFolderVar()`            |
+| Environment | Active env        | env `.bru`    | `bru.getEnvVar()`               |
+| Collection  | Whole collection  | `bruno.json`  | `bru.getCollectionVar()`        |
+| Global      | All collections   | App storage   | `bru.getGlobalEnvVar()`         |
+| Process Env | OS env            | `.env`        | `bru.getProcessEnv()`           |
 
 **Interpolation** — use `{{varName}}` anywhere (URLs, headers, body, params):
+
 ```bru
 get { url: {{baseUrl}}/{{apiVersion}}/users/{{userId}} }
 headers { Authorization: Bearer {{access_token}} }
@@ -208,6 +213,7 @@ headers { Authorization: Bearer {{access_token}} }
 Two phases: `script:pre-request` (runs before send, can modify `req`, no `res`) and `script:post-response` (runs after, can read `res`, set vars, chain). Both have `bru.*`.
 
 ### Request object (`req`) — pre-request only
+
 ```javascript
 req.getUrl() / req.setUrl(url)
 req.getMethod() / req.setMethod("POST")
@@ -225,6 +231,7 @@ req.getName() / req.getTags()
 ```
 
 ### Response object (`res`) — post-response & tests
+
 ```javascript
 res.status / res.statusText           // or res.getStatus() / res.getStatusText()
 res.headers                           // plain object, keys lowercased
@@ -237,49 +244,60 @@ res.url / res.getUrl()                // after redirects
 ```
 
 ### Environment vars
+
 ```javascript
-bru.getEnvName()
-bru.getEnvVar(key) / bru.setEnvVar(key, val)
-bru.setEnvVar(key, val, { persist: true })   // saves to disk
-bru.hasEnvVar(key) / bru.deleteEnvVar(key) / bru.deleteAllEnvVars()
-bru.getAllEnvVars()
-bru.getGlobalEnvVar(key) / bru.setGlobalEnvVar(key, val) / bru.hasGlobalEnvVar(key) / bru.getAllGlobalEnvVars()
+bru.getEnvName();
+bru.getEnvVar(key) / bru.setEnvVar(key, val);
+bru.setEnvVar(key, val, { persist: true }); // saves to disk
+bru.hasEnvVar(key) / bru.deleteEnvVar(key) / bru.deleteAllEnvVars();
+bru.getAllEnvVars();
+bru.getGlobalEnvVar(key) /
+  bru.setGlobalEnvVar(key, val) /
+  bru.hasGlobalEnvVar(key) /
+  bru.getAllGlobalEnvVars();
 ```
 
 ### Runtime vars (in-memory, for chaining requests)
+
 ```javascript
-bru.setVar(key, val) / bru.getVar(key) / bru.hasVar(key)
-bru.getAllVars() / bru.deleteVar(key) / bru.deleteAllVars()
+bru.setVar(key, val) / bru.getVar(key) / bru.hasVar(key);
+bru.getAllVars() / bru.deleteVar(key) / bru.deleteAllVars();
 // Scoped reads (read-only):
-bru.getCollectionVar(k) / bru.hasCollectionVar(k)
-bru.getFolderVar(k) / bru.getRequestVar(k)
-bru.getProcessEnv("SECRET_TOKEN")    // from OS env / .env
+bru.getCollectionVar(k) / bru.hasCollectionVar(k);
+bru.getFolderVar(k) / bru.getRequestVar(k);
+bru.getProcessEnv("SECRET_TOKEN"); // from OS env / .env
 ```
 
 ### Utilities
+
 ```javascript
-await bru.sleep(3000)                 // pause (polling loops)
-bru.interpolate("{{$guid}}")          // resolve dynamic/env vars
-bru.cwd()                             // collection path
-bru.isSafeMode()                      // true (default) | false (developer)
-bru.disableParsingResponseJson()      // call in pre-request; getBody() → string
-bru.getSecretVar("service.key")       // needs secret manager config
+await bru.sleep(3000); // pause (polling loops)
+bru.interpolate("{{$guid}}"); // resolve dynamic/env vars
+bru.cwd(); // collection path
+bru.isSafeMode(); // true (default) | false (developer)
+bru.disableParsingResponseJson(); // call in pre-request; getBody() → string
+bru.getSecretVar("service.key"); // needs secret manager config
 ```
 
 ### Ad-hoc & chained requests
+
 ```javascript
 // Fire an arbitrary HTTP request:
 const resp = await bru.sendRequest({
-  method: "POST", url: "https://auth.example.com/token",
+  method: "POST",
+  url: "https://auth.example.com/token",
   headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  data: { grant_type: "client_credentials", client_id: bru.getEnvVar("CLIENT_ID") },
-  timeout: 5000
-})
-bru.setEnvVar("access_token", resp.data.access_token, { persist: true })
+  data: {
+    grant_type: "client_credentials",
+    client_id: bru.getEnvVar("CLIENT_ID"),
+  },
+  timeout: 5000,
+});
+bru.setEnvVar("access_token", resp.data.access_token, { persist: true });
 
 // Run an existing collection request by path:
-const authResp = await bru.runRequest("auth/login")
-bru.setVar("token", authResp.body.token)
+const authResp = await bru.runRequest("auth/login");
+bru.setVar("token", authResp.body.token);
 // ⚠️ Never call bru.runRequest() from a collection-level script (infinite loop).
 ```
 
@@ -291,41 +309,43 @@ Live in the `tests {}` block. Uses Chai.js — all `expect()` syntax works.
 
 ```javascript
 test("returns 200", function () {
-  expect(res.getStatus()).to.equal(200)
-})
+  expect(res.getStatus()).to.equal(200);
+});
 
 test("returns correct user", function () {
-  const body = res.getBody()
-  expect(body).to.have.property("id")
-  expect(body.email).to.contain("@example.com")
-  expect(body.role).to.be.oneOf(["admin", "user"])
-})
+  const body = res.getBody();
+  expect(body).to.have.property("id");
+  expect(body.email).to.contain("@example.com");
+  expect(body.role).to.be.oneOf(["admin", "user"]);
+});
 
 // Bruno-specific JSON helpers:
-expect(res.getBody()).to.have.jsonBody()
-expect(res.getBody()).to.have.jsonBody("user.id", 123)
+expect(res.getBody()).to.have.jsonBody();
+expect(res.getBody()).to.have.jsonBody("user.id", 123);
 
 // JSON Schema (Ajv, drafts 04/06/07/2019-09/2020-12):
 expect(res.getBody()).to.have.jsonSchema({
-  type: "object", required: ["id", "email"],
+  type: "object",
+  required: ["id", "email"],
   properties: {
     id: { type: "integer" },
     email: { type: "string", format: "email" },
-    createdAt: { type: "string", format: "date-time" }
-  }
-})
+    createdAt: { type: "string", format: "date-time" },
+  },
+});
 
 // Arrays:
-const users = res.getBody()
-expect(users).to.be.an("array")
-expect(users).to.have.lengthOf.above(0)
-users.forEach(u => expect(u.email).to.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
+const users = res.getBody();
+expect(users).to.be.an("array");
+expect(users).to.have.lengthOf.above(0);
+users.forEach((u) => expect(u.email).to.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/));
 
 // Save token for chaining:
-bru.setVar("authToken", res.getBody().token)
+bru.setVar("authToken", res.getBody().token);
 ```
 
 **Chai quick reference:**
+
 ```javascript
 // Equality:   .equal(x) (===)  .eql(x) (deep)  .not.equal(x)
 // Types:      .be.a("string")  .an("array")  .an("object")  .be.true/false/null/undefined
@@ -356,15 +376,15 @@ assert {
 
 **Operators:**
 
-| Category | Operators |
-|----------|-----------|
-| Comparison | `eq` `neq` `gt` `gte` `lt` `lte` |
-| String | `contains` `notContains` `startsWith` `endsWith` `matches` `notMatches` |
-| Null/Empty | `isNull` `isNotNull` `isEmpty` `isNotEmpty` |
-| Defined | `isDefined` `isUndefined` |
-| Boolean | `isTruthy` `isFalsy` |
-| Type | `isNumber` `isString` `isBoolean` `isArray` `isJson` |
-| Range | `between` `length` `in` `notIn` |
+| Category   | Operators                                                               |
+| ---------- | ----------------------------------------------------------------------- |
+| Comparison | `eq` `neq` `gt` `gte` `lt` `lte`                                        |
+| String     | `contains` `notContains` `startsWith` `endsWith` `matches` `notMatches` |
+| Null/Empty | `isNull` `isNotNull` `isEmpty` `isNotEmpty`                             |
+| Defined    | `isDefined` `isUndefined`                                               |
+| Boolean    | `isTruthy` `isFalsy`                                                    |
+| Type       | `isNumber` `isString` `isBoolean` `isArray` `isJson`                    |
+| Range      | `between` `length` `in` `notIn`                                         |
 
 ---
 
@@ -383,6 +403,7 @@ script:post-response {
   }
 }
 ```
+
 ```bru
 # 2. users/get-user.bru (runs after login)
 get { url: {{baseUrl}}/users/{{userId}} }
@@ -399,20 +420,22 @@ Run the same requests against multiple inputs from CSV/JSON.
 // request body placeholders
 { "name": "{{name}}", "job": "{{job}}" }
 ```
+
 ```csv
 name,job
 John Doe,Software Engineer
 Jane Smith,Product Manager
 ```
+
 ```javascript
 // Access iteration data in scripts:
-bru.runner.iterationData.get("name")   // single field
-bru.runner.iterationData.get()         // all fields
-bru.runner.iterationData.stringify()   // JSON string
-bru.runner.iterationData.has("name")
-bru.runner.iterationIndex              // 0-based
-bru.runner.totalIterations
-req.setBody({ name, job })
+bru.runner.iterationData.get("name"); // single field
+bru.runner.iterationData.get(); // all fields
+bru.runner.iterationData.stringify(); // JSON string
+bru.runner.iterationData.has("name");
+bru.runner.iterationIndex; // 0-based
+bru.runner.totalIterations;
+req.setBody({ name, job });
 ```
 
 ---
@@ -420,13 +443,13 @@ req.setBody({ name, job })
 ## Collection Runner Control
 
 ```javascript
-bru.runner.setNextRequest("Check Job Status")  // jump (alias: bru.setNextRequest)
-bru.runner.stopExecution()                     // stop whole run
-bru.setNextRequest(null)                        // stop after current
-bru.runner.skipRequest()                        // skip (call in pre-request)
+bru.runner.setNextRequest("Check Job Status"); // jump (alias: bru.setNextRequest)
+bru.runner.stopExecution(); // stop whole run
+bru.setNextRequest(null); // stop after current
+bru.runner.skipRequest(); // skip (call in pre-request)
 // Skip by tag:
 if (req.getTags().includes("skip-in-ci") && bru.getEnvVar("CI") === "true") {
-  bru.runner.skipRequest()
+  bru.runner.skipRequest();
 }
 ```
 
@@ -439,6 +462,7 @@ npm install -g @usebruno/cli
 ```
 
 **Run:**
+
 ```bash
 bru run                                   # whole collection
 bru run request.bru                       # specific file(s)/folder(s)
@@ -452,6 +476,7 @@ bru run --iteration-count 5
 ```
 
 **Filter:**
+
 ```bash
 bru run --tags smoke,users               # ALL listed tags
 bru run --exclude-tags slow,integration  # exclude ANY
@@ -462,6 +487,7 @@ bru run --parallel
 ```
 
 **Report:**
+
 ```bash
 bru run --reporter-html results.html
 bru run --reporter-junit results.xml     # CI
@@ -470,6 +496,7 @@ bru run --reporter-skip-request-body / --reporter-skip-response-body / --reporte
 ```
 
 **Security / sandbox:**
+
 ```bash
 bru run --insecure                       # self-signed certs
 bru run --cacert ./certs/ca.pem
@@ -479,6 +506,7 @@ bru run --sandbox=developer              # enables require(), Node built-ins, fs
 ```
 
 **GitHub Actions:**
+
 ```yaml
 name: API Tests
 on: [push, pull_request]
@@ -539,6 +567,7 @@ docs {
   - `409` – Email already registered
 }
 ```
+
 Auto-generate HTML: Bruno UI → Collection → ... → Export → Generate Docs.
 
 ---
@@ -546,40 +575,44 @@ Auto-generate HTML: Bruno UI → Collection → ... → Export → Generate Docs
 ## Common Patterns & Recipes
 
 **Token refresh (auto-retry)** — collection-level post-response:
+
 ```javascript
 if (res.getStatus() === 401) {
-  const r = await bru.runRequest("auth/refresh-token")
+  const r = await bru.runRequest("auth/refresh-token");
   if (r.status === 200) {
-    bru.setEnvVar("access_token", r.body.token, { persist: true })
-    bru.setNextRequest(req.getName())   // 1 retry only
+    bru.setEnvVar("access_token", r.body.token, { persist: true });
+    bru.setNextRequest(req.getName()); // 1 retry only
   }
 }
 ```
 
 **CRUD suite** (each file passes data to the next via `setVar`/`getVar`):
+
 ```
 users/  01-create (POST→{{userId}})  02-get  03-update  04-list  05-delete
 ```
 
 **Polling until complete:**
+
 ```javascript
 // job-creation post-response:
-bru.setVar("jobId", res.getBody().id)
-bru.setVar("pollRetries", 0)
-bru.setNextRequest("Poll Job Status")
+bru.setVar("jobId", res.getBody().id);
+bru.setVar("pollRetries", 0);
+bru.setNextRequest("Poll Job Status");
 
 // "Poll Job Status" pre-request:
-if (parseInt(bru.getVar("pollRetries") || "0") >= 10) bru.runner.stopExecution()
+if (parseInt(bru.getVar("pollRetries") || "0") >= 10)
+  bru.runner.stopExecution();
 
 // "Poll Job Status" post-response:
-const body = res.getBody()
+const body = res.getBody();
 if (body.status === "pending") {
-  bru.setVar("pollRetries", parseInt(bru.getVar("pollRetries") || "0") + 1)
-  await bru.sleep(2000)
-  bru.setNextRequest("Poll Job Status")   // loop
+  bru.setVar("pollRetries", parseInt(bru.getVar("pollRetries") || "0") + 1);
+  await bru.sleep(2000);
+  bru.setNextRequest("Poll Job Status"); // loop
 } else {
-  bru.setVar("jobResult", body.result)
-  bru.setNextRequest("Process Job Result")
+  bru.setVar("jobResult", body.result);
+  bru.setNextRequest("Process Job Result");
 }
 ```
 
@@ -595,12 +628,15 @@ Never hardcode secrets in `.bru` files.
 # .env (add to .gitignore!)
 ACCESS_TOKEN=my_secret_token
 ```
+
 ```bru
 headers { Authorization: Bearer {{process.env.ACCESS_TOKEN}} }
 ```
+
 ```javascript
-bru.getProcessEnv("ACCESS_TOKEN")
+bru.getProcessEnv("ACCESS_TOKEN");
 ```
+
 Secret env vars → `vars:secret { ... }` block (stored encrypted in app, not in file). External managers (AWS/Azure/HashiCorp): `bru.getSecretVar("my-service.api_key")`.
 
 ---
@@ -611,6 +647,7 @@ Secret env vars → `vars:secret { ... }` block (stored encrypted in app, not in
 bru import openapi --source ./openapi.yaml --output ./collection/ --collection-name "My API"
 bru import openapi --source ./openapi.yaml --output ./collection/ --group-by path
 ```
+
 UI import formats: Postman (v2.0/2.1), Insomnia, OpenAPI 3.x, WSDL (SOAP), Hoppscotch.
 
 ---
@@ -669,11 +706,11 @@ headers {
 **Settings:** Connection timeout (default 30s, 1–300s); auto-reconnect on drop.
 Rejected subprotocol → `400 Bad Request` (check connection log).
 
-| | HTTP | WebSocket |
-|---|------|-----------|
-| Connection | Request-Response | Persistent |
-| Data flow | Unidirectional | Bidirectional |
-| Use case | REST APIs | Real-time / chat / live feeds |
+|            | HTTP             | WebSocket                     |
+| ---------- | ---------------- | ----------------------------- |
+| Connection | Request-Response | Persistent                    |
+| Data flow  | Unidirectional   | Bidirectional                 |
+| Use case   | REST APIs        | Real-time / chat / live feeds |
 
 ---
 
@@ -715,13 +752,14 @@ Rejected subprotocol → `400 Bad Request` (check connection log).
 {{$randomFileName}} {{$randomMimeType}} {{$randomFileExt}}
 {{$randomColor}} {{$randomHexColor}}
 ```
+
 ```javascript
 // In scripts:
 req.setBody({
   id: bru.interpolate("{{$randomUUID}}"),
   name: bru.interpolate("{{$randomFullName}}"),
-  email: bru.interpolate("{{$randomEmail}}")
-})
+  email: bru.interpolate("{{$randomEmail}}"),
+});
 ```
 
 ---
@@ -729,11 +767,16 @@ req.setBody({
 ## Variable Interpolation — Advanced (v2.2.0+)
 
 ```javascript
-bru.setVar("user", { username: "alice", isVerified: true, preferences: { theme: "dark" } })
-bru.setVar("apiTypes", ["REST", "GraphQL", "gRPC"])
-bru.setVar("configs", [{ port: 3000 }, { port: 8080 }])
-bru.setVar("createdAt", new Date())
+bru.setVar("user", {
+  username: "alice",
+  isVerified: true,
+  preferences: { theme: "dark" },
+});
+bru.setVar("apiTypes", ["REST", "GraphQL", "gRPC"]);
+bru.setVar("configs", [{ port: 3000 }, { port: 8080 }]);
+bru.setVar("createdAt", new Date());
 ```
+
 ```json
 {
   "user": "{{user.username}}",          // "alice"
@@ -746,6 +789,7 @@ bru.setVar("createdAt", new Date())
 ```
 
 **Declarative vars (no scripting)** — `vars:pre-request` / `vars:post-response` blocks; post-response accepts JSONPath dot-notation on `res`:
+
 ```bru
 vars:pre-request { baseUrl: https://api.example.com  userId: 42 }
 vars:post-response {
